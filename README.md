@@ -23,6 +23,7 @@ This `TokenSale` smart contract is designed for conducting token sales on the Ma
 ## Usage
 ### For Contract Owners
 - **Setting the Token Contract**: Call `setTokenContract` with the address of the ERC20 token contract you wish to sell through this contract.
+- **Deposit ERC20 Tokens**: Simply send your ERC20 you wish to sell, directly to your TokenSale contract address.
 - **Setting the Sale Rate**: Determine the rate at which you want to sell your tokens (tokens per ETH) and call `setRate` with this value.
 - **Ending the Sale**: To end the sale, withdraw remaining tokens and collected ETH, call `endSale`.
 
@@ -33,6 +34,8 @@ This `TokenSale` smart contract is designed for conducting token sales on the Ma
 - Ensure the token contract address and sale rate are set before attempting to buy tokens.
 - Only the owner can set the token contract address, sale rate, and end the sale.
 - The contract's ETH balance is transferred to the owner when the sale is ended, along with any unsold tokens.
+- If insufficent tokens are held in the TokenSale contract, the transaction "sale" will revert.
+- This is a development version, please test thouroulgy and use at your own risk!
 
 ## Support
 For additional assistance or inquiries, consider opening an issue on this GitHub repository or contact @pondscan x.com/pondscan.
