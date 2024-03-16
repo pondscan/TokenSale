@@ -6,7 +6,7 @@ This `TokenSale` smart contract is designed for conducting token sales on the Ma
 ## Features
 - Settable ERC20 token contract post-deployment.
 - Adjustable token sale rate by the contract owner.
-- Direct purchase of tokens by sending ETH to the contract.
+- Direct purchase of tokens by sending ETH (LAVAL) to the contract.
 - Functionality for the owner to end the sale, withdrawing remaining tokens and ETH.
 
 ## Prerequisites
