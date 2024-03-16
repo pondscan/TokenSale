@@ -1,7 +1,7 @@
 # TokenSale Smart Contract
 
 ## Overview
-This `TokenSale` smart contract is designed for conducting token sales on the Ethereum blockchain. It allows the contract owner to set a specific ERC20 token contract and adjust the token sale rate, making it versatile for various token sale scenarios.
+This `TokenSale` smart contract is designed for conducting token sales on the Magma Testnet. It allows the contract owner to set a specific ERC20 token contract and adjust the token sale rate, making it versatile for various token sale scenarios.
 
 ## Features
 - Settable ERC20 token contract post-deployment.
