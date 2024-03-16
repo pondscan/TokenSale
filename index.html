@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenSale Owner Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #EA462B; /* Main BG color */
+            color: #000; /* Text color as per original template */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .app-title, .app-subtitle, input, button {
+            color: #000; /* Black text for better readability */
+        }
+
+        input, button {
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 16px;
+            width: 300px; /* Fixed width for equal lengths */
+            border: 2px solid #FFA500; /* Orange border */
+            border-radius: 5px;
+            background-color: #FFF3E0; /* Light orange background */
+        }
+
+        button {
+            background-color: #FFA500; /* Orange background */
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #FF8C00; /* Darker orange on hover */
+            transform: translateY(-2px);
+        }
+
+        .greyed-out {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .data-display {
+            margin-top: 20px;
+            background-color: #FFDAB9; /* Lighter background for data display sections */
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="app-title">TokenSale Owner Interface</div>
+        <div class="app-subtitle">Manage Your Token Sale</div>
+
+        <button onclick="connectWallet()">Connect Wallet</button>
+
+        <div id="app" class="greyed-out">
+            <input type="text" id="tokenContractAddress" placeholder="Token Contract Address">
+            <button onclick="setTokenContract()">Set Token Contract</button>
+
+            <input type="number" id="tokenRate" placeholder="Token Rate (Tokens per ETH)">
+            <button onclick="setRate()">Set Rate</button>
+
+            <button onclick="endSale()">End Sale</button>
+
+            <div class="data-display">
+                <button onclick="getTokensSold()">Get Tokens Sold</button>
+                <p id="tokensSold">Tokens Sold: 0</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const TokenSale_ABI = [
+            {
+                "constant": false,
+                "inputs": [{"name": "_tokenContract", "type": "address"}],
+                "name": "setTokenContract",
+                "outputs": [],
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [{"name": "_rate", "type": "uint256"}],
+                "name": "setRate",
+                "outputs": [],
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "endSale",
+                "outputs": [],
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "tokensSold",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "type": "function"
+            }
+        ];
+
+        const tokenSaleContractAddress = "YOUR_CONTRACT_ADDRESS_HERE"; // Replace with your actual contract address
+        let tokenSaleContract;
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    document.getElementById('app').classList.add('active');
+                    initContract();
+                } catch (error) {
+                    console.error('Error connecting to wallet:', error);
+                }
+            } else {
+                alert("Please install MetaMask to use this interface.");
+            }
+        }
+
+        function initContract() {
+            const web3 = new Web3(window.ethereum);
+            tokenSaleContract = new web3.eth.Contract(TokenSale_ABI, tokenSaleContractAddress);
+        }
+
+        async function setTokenContract() {
+            const tokenContractAddress = document.getElementById('tokenContractAddress').value.trim();
+            // Additional code for setting token contract...
+        }
+
+        async function setRate() {
+            const tokenRate = document.getElementById('tokenRate').value.trim();
+            // Additional code for setting rate...
+        }
+
+        async function endSale() {
+            // Additional code for ending the sale...
+        }
+
+        async function getTokensSold() {
+            // Additional code for getting tokens sold...
+        }
+    </script>
+</body>
+</html>
