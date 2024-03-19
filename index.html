@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TokenSale Owner Interface</title>
+    <title>Token Sale Admin Panel</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #EA462B; /* Main BG color */
-            color: #000; /* Text color as per original template */
+            background-color: #EA462B;
+            /* Main BG color */
+            color: #000;
+            /* Text color */
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -21,30 +24,53 @@
             text-align: center;
         }
 
-        .app-title, .app-subtitle, input, button {
-            color: #000; /* Black text for better readability */
+        .app-title {
+            font-size: 32px;
+            color: #FFA500;
+            /* Orange color for the title */
+            margin-bottom: 10px;
         }
 
-        input, button {
+        .app-subtitle {
+            font-size: 20px;
+            color: #000;
+            /* Black color for the subtitle */
+            margin-bottom: 30px;
+        }
+
+        input,
+        button {
             margin-top: 10px;
             padding: 12px;
             font-size: 16px;
-            width: 300px; /* Fixed width for equal lengths */
-            border: 2px solid #FFA500; /* Orange border */
+            width: 90%;
+            border: 2px solid #FFA500;
+            /* Orange border */
             border-radius: 5px;
-            background-color: #FFF3E0; /* Light orange background */
+            /* Rounded corners */
+            box-sizing: border-box;
+            /* Better width management */
+            background-color: #FFF3E0;
+            /* Light orange background */
+            color: #000;
+            /* Black text */
         }
 
         button {
-            background-color: #FFA500; /* Orange background */
+            background-color: #FFA500;
+            /* Orange background for buttons */
+            color: #000;
+            /* Black text for buttons */
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.2s;
         }
 
         button:hover {
-            background-color: #FF8C00; /* Darker orange on hover */
+            background-color: #FF8C00;
+            /* Darker orange on hover */
             transform: translateY(-2px);
+            /* Slight lift effect */
         }
 
         .greyed-out {
@@ -52,113 +78,171 @@
             pointer-events: none;
         }
 
-        .active {
+        .active,
+        .connect-btn {
             opacity: 1;
             pointer-events: auto;
         }
 
-        .data-display {
+        #walletInfo,
+        #contractInfo,
+        .connect-btn {
             margin-top: 20px;
-            background-color: #FFDAB9; /* Lighter background for data display sections */
-            padding: 10px;
-            border-radius: 5px;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
 </head>
+
 <body>
     <div class="container">
-        <div class="app-title">TokenSale Owner Interface</div>
-        <div class="app-subtitle">Manage Your Token Sale</div>
+        <div class="app-title">Token Sale Admin Panel</div>
+        <div class="app-subtitle">Manage your Token Sale</div>
 
-        <button onclick="connectWallet()">Connect Wallet</button>
+        <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
 
         <div id="app" class="greyed-out">
-            <input type="text" id="tokenContractAddress" placeholder="Token Contract Address">
-            <button onclick="setTokenContract()">Set Token Contract</button>
+            <div id="walletInfo">
+                <p>Wallet Connected: <span id="userAddress">No</span></p>
+            </div>
+            <div id="contractInfo">
+                <input type="text" id="contractAddress" placeholder="Token Sale Contract Address">
+                <button onclick="loadContract()">Load Contract</button>
+            </div>
 
-            <input type="number" id="tokenRate" placeholder="Token Rate (Tokens per ETH)">
-            <button onclick="setRate()">Set Rate</button>
+            <div id="adminActions">
+                <input type="text" id="newRate" placeholder="Set New Sale Rate">
+                <button onclick="setSaleRate()">Set Rate</button>
+                <input type="text" id="newTokenAddress" placeholder="Set Token Contract Address">
+                <button onclick="setTokenAddress()">Set Token Address</button>
+                <button onclick="endSale()">End Sale & Withdraw LAVA</button>
+            </div>
 
-            <button onclick="endSale()">End Sale</button>
-
-            <div class="data-display">
-                <button onclick="getTokensSold()">Get Tokens Sold</button>
-                <p id="tokensSold">Tokens Sold: 0</p>
+            <div id="tokenSaleDetails">
             </div>
         </div>
     </div>
     <script>
-        const TokenSale_ABI = [
-            {
-                "constant": false,
-                "inputs": [{"name": "_tokenContract", "type": "address"}],
-                "name": "setTokenContract",
-                "outputs": [],
-                "type": "function"
-            },
-            {
-                "constant": false,
-                "inputs": [{"name": "_rate", "type": "uint256"}],
-                "name": "setRate",
-                "outputs": [],
-                "type": "function"
-            },
-            {
-                "constant": false,
-                "inputs": [],
-                "name": "endSale",
-                "outputs": [],
-                "type": "function"
-            },
-            {
-                "constant": true,
-                "inputs": [],
-                "name": "tokensSold",
-                "outputs": [{"name": "", "type": "uint256"}],
-                "type": "function"
-            }
-        ];
+        let contract;
+        let userAccount;
 
-        const tokenSaleContractAddress = "YOUR_CONTRACT_ADDRESS_HERE"; // Replace with your actual contract address
-        let tokenSaleContract;
+        const contractABI = [
+            { "inputs": [], "name": "tokensSold", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [], "name": "rate", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [], "name": "tokenContract", "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [{ "internalType": "contract IERC20", "name": "_tokenContract", "type": "address" }], "name": "setTokenContract", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [{ "internalType": "uint256", "name": "_rate", "type": "uint256" }], "name": "setRate", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [], "name": "endSale", "outputs": [], "stateMutability": "nonpayable", "type": "function" }
+        ];
 
         async function connectWallet() {
             if (window.ethereum) {
                 try {
                     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    userAccount = accounts[0];
+                    document.getElementById('app').classList.remove('greyed-out');
                     document.getElementById('app').classList.add('active');
-                    initContract();
+                    document.querySelector('.connect-btn').classList.add('greyed-out');
+                    document.getElementById('userAddress').textContent = userAccount;
                 } catch (error) {
-                    console.error('Error connecting to wallet:', error);
+                    console.error('Error connecting to MetaMask:', error);
                 }
             } else {
-                alert("Please install MetaMask to use this interface.");
+                alert('Please install MetaMask to use this feature!');
             }
         }
 
-        function initContract() {
-            const web3 = new Web3(window.ethereum);
-            tokenSaleContract = new web3.eth.Contract(TokenSale_ABI, tokenSaleContractAddress);
+        async function loadContract() {
+            const contractAddress = document.getElementById('contractAddress').value.trim();
+            if (!contractAddress) {
+                alert("Token Sale Contract Address is required.");
+                return;
+            }
+
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+            displayContractDetails();
+            listenForSales(); // Start listening for sales
         }
 
-        async function setTokenContract() {
-            const tokenContractAddress = document.getElementById('tokenContractAddress').value.trim();
-            // Additional code for setting token contract...
+        async function displayContractDetails() {
+            const tokensSold = await contract.methods.tokensSold().call();
+            const rate = await contract.methods.rate().call();
+            const tokenContractAddress = await contract.methods.tokenContract().call();
+            const ethBalance = await web3.eth.getBalance(contract.options.address);
+
+            document.getElementById('tokenSaleDetails').innerHTML = `
+                <p>Tokens Sold: ${tokensSold} (value in wei)</p>
+                <p>Sale Rate: ${rate} Tokens per LAVA</p>
+                <p>Token Contract Address: ${tokenContractAddress}</p>
+                <p>LAVA Balance: ${web3.utils.fromWei(ethBalance, 'ether')} LAVA</p>
+            `;
         }
 
-        async function setRate() {
-            const tokenRate = document.getElementById('tokenRate').value.trim();
-            // Additional code for setting rate...
+        window.addEventListener('load', () => {
+            window.web3 = new Web3(window.ethereum);
+        });
+
+        async function setSaleRate() {
+            const newRate = document.getElementById('newRate').value.trim();
+            if (!newRate) {
+                alert("New sale rate is required.");
+                return;
+            }
+
+            try {
+                await contract.methods.setRate(newRate).send({ from: userAccount });
+                alert("Sale rate updated successfully!");
+                displayContractDetails(); // Refresh contract details to show the updated rate
+            } catch (error) {
+                console.error('Error setting sale rate:', error);
+                alert("Failed to set sale rate.");
+            }
+        }
+
+        async function setTokenAddress() {
+            const newTokenAddress = document.getElementById('newTokenAddress').value.trim();
+            if (!newTokenAddress) {
+                alert("Token contract address is required.");
+                return;
+            }
+
+            try {
+                await contract.methods.setTokenContract(newTokenAddress).send({ from: userAccount });
+                alert("Token contract address updated successfully!");
+                displayContractDetails(); // Refresh contract details to show the new token address
+            } catch (error) {
+                console.error('Error setting token address:', error);
+                alert("Failed to set token contract address.");
+            }
         }
 
         async function endSale() {
-            // Additional code for ending the sale...
+            try {
+                await contract.methods.endSale().send({ from: userAccount });
+                alert("Sale ended and funds withdrawn successfully!");
+                document.getElementById('adminActions').style.display = 'none'; // Hide admin actions after sale ends
+            } catch (error) {
+                console.error('Error ending sale:', error);
+                alert("Failed to end sale and withdraw funds.");
+            }
         }
 
-        async function getTokensSold() {
-            // Additional code for getting tokens sold...
+        let totalSales = 0; // Initialize total sales counter
+
+        function listenForSales() {
+            contract.events.Sold({
+                fromBlock: 0
+            }, function (error, event) {
+                if (error) {
+                    console.error("Error listening for Sold events:", error);
+                } else {
+                    totalSales += 1; // Increment total sales counter
+                    document.getElementById('totalSales').innerText = `Total Sale Transactions: ${totalSales}`;
+                }
+            });
         }
+
+
     </script>
 </body>
+
 </html>
