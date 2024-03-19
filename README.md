@@ -3,6 +3,8 @@
 ## Overview
 This `TokenSale` smart contract is designed for conducting token sales on the Magma Testnet. It allows the contract owner to set a specific ERC20 token contract and adjust the token sale rate, making it versatile for various token sale scenarios.
 
+For simplicity, you may access your Token Sale Admin panel here: https://pondscan.github.io/TokenSale/
+
 ## Features
 - Settable ERC20 token contract post-deployment.
 - Adjustable token sale rate by the contract owner.
